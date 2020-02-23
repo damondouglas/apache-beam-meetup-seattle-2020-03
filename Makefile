@@ -12,8 +12,12 @@ build: ## Build containers
 
 config: ## Deploy environment configuration to cluster
 	kubectl create configmap job-config \
-		--from-literal=INPUT="gs://apache-beam-samples/shakespeare/*" \
-		--from-literal=OUTPUT="gs://${PROJECT}-output/wordcount/out"
+		--from-literal=INPUT="gs://${PROJECT}-input" \
+		--from-literal=OUTPUT="gs://${PROJECT}-output"
+
+stage-simlator: ## Stage files for simulator
+	curl https://zenodo.org/record/3238718/files/redmed_lexicon.tsv?download=1 | \
+	gsutil cp - gs://${PROJECT}-input/redmed_lexicon.tsv
 
 deploy: ## Deploy artifacts
 	skaffold run --default-repo=${default-repo}
