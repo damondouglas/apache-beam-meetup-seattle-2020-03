@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: beam
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: pipeline
+          image: pipeline
+          command:
+            - ./pipeline
+          env:
+            - name: SOURCE
+              value: "patients.csv"
+            - name: TARGET
+              value: "bigquery://beam.patients"
+          envFrom:
+            - configMapRef:
+                name: job-config

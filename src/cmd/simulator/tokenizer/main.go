@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/apache/beam/sdks/go/pkg/beam"
-	"github.com/apache/beam/sdks/go/pkg/beam/io/textio"
 	"github.com/apache/beam/sdks/go/pkg/beam/x/beamx"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"temp/pkg/simulator"
+	"temp/pkg/url"
 )
 
 const (
@@ -54,11 +54,21 @@ func main() {
 	}
 	beam.Init()
 	p, s := beam.NewPipelineWithRoot()
-	lines := textio.Read(s, fmt.Sprintf("%s/%s", input, source))
+	reader, err := url.NewReader(fmt.Sprintf("%s/%s", input, source))
+	if err != nil {
+		log.Fatal(err)
+	}
+	writer, err := url.NewWriter(fmt.Sprintf("%s/%s", output, target))
+	if err != nil {
+		log.Fatal(err)
+	}
+	//lines := textio.Read(s, fmt.Sprintf("%s/%s", input, source))
+	lines := reader.Read(s)
 	tokens := simulator.Tokenize(s, lines, col...)
 	filtered := simulator.Filter(s, tokens, "_", "-")
-	textio.Write(s, fmt.Sprintf("%s/%s", output, target), filtered)
-	err := beamx.Run(context.Background(), p)
+	//textio.Write(s, fmt.Sprintf("%s/%s", output, target), filtered)
+	writer.Write(s, filtered)
+	err = beamx.Run(context.Background(), p)
 	if err != nil {
 		log.Fatal(err)
 	}
