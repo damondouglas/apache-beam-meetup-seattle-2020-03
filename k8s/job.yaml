@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: beam
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: tokenizer
+          image: tokenizer
+          command:
+            - ./tokenizer
+          envFrom:
+            - configMapRef:
+                name: job-config

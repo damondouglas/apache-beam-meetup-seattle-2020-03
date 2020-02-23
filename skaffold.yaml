@@ -1,0 +1,16 @@
+apiVersion: skaffold/v2alpha3
+kind: Config
+metadata:
+  name: beam
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.IMAGE_NAME}}:{{.TAG}}"
+  artifacts:
+    - image: tokenizer
+      docker:
+        dockerfile: package/tokenizer
+deploy:
+  kubectl:
+    manifests:
+      - k8s/*.yaml
