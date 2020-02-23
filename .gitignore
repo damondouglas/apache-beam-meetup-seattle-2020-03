@@ -1,0 +1,9 @@
+# IDE related
+.idea
+
+# Terraform related
+.terraform
+*.tfstate
+*.tfstate.backup
+
+.DS_Store
