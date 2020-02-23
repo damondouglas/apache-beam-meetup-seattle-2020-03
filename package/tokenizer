@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY src .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /build/tokenizer ./cmd/tokenizer
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /build/tokenizer ./cmd/simulator/tokenizer
 
 FROM alpine:latest
 

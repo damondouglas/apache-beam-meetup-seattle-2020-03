@@ -2,13 +2,16 @@ package simulator
 
 import (
 	"github.com/apache/beam/sdks/go/pkg/beam"
+	"github.com/apache/beam/sdks/go/pkg/beam/transforms/filter"
 	"strings"
 )
 
-// Tokenize a beam.PCollection by splitting at indicated columns
+// Tokenize a beam.PCollection by splitting at indicated columns.
+// Column numbers a zero based.
 func Tokenize(s beam.Scope, lines beam.PCollection, column ...int) beam.PCollection {
 	tabbedTokens := beam.ParDo(s, tabbedLineHandler(column...), lines)
-	return beam.ParDo(s, commaDelimitedHandler, tabbedTokens)
+	tokens := beam.ParDo(s, commaDelimitedHandler, tabbedTokens)
+	return filter.Distinct(s, tokens)
 }
 
 func tabbedLineHandler(column ...int) func(string, func(string)) {

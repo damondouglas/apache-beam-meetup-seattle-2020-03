@@ -17,10 +17,10 @@ func handler(ignore ...string) func(string, func(string)) {
 	return func(token string, emit func(string)) {
 		for _, k := range p {
 			if k.MatchString(token) {
-				continue
+				return
 			}
-			emit(token)
 		}
+		emit(token)
 	}
 }
 

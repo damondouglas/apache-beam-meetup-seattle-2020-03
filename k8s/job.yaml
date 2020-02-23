@@ -11,6 +11,13 @@ spec:
           image: tokenizer
           command:
             - ./tokenizer
+          env:
+            - name: SOURCE
+              value: "redmed_lexicon.tsv"
+            - name: TARGET
+              value: "drugs.csv"
+            - name: COLUMNS
+              value: "1,3,4,5"
           envFrom:
             - configMapRef:
                 name: job-config
