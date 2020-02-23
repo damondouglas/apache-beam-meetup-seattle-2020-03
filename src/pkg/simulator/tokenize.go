@@ -5,26 +5,21 @@ import (
 	"strings"
 )
 
-var (
-	tokenColumns = []int{1,2,4}
-)
-
-// Tokenize a beam.PCollection expected as
-// dbid    drug    known   misspellingPhon edOne   edTwo   pillMark        google_ms       google_title    google_snippet  ud_slang        missed
-// See https://zenodo.org/record/3238718#.Xk9hOpNKjOQ
-// Tab delimited columns 2, 3 and 5 are extracted and split by comma
-func Tokenize(s beam.Scope, lines beam.PCollection) beam.PCollection {
-	tabbedTokens := beam.ParDo(s, tabbedLineHandler, lines)
+// Tokenize a beam.PCollection by splitting at indicated columns
+func Tokenize(s beam.Scope, lines beam.PCollection, column ...int) beam.PCollection {
+	tabbedTokens := beam.ParDo(s, tabbedLineHandler(column...), lines)
 	return beam.ParDo(s, commaDelimitedHandler, tabbedTokens)
 }
 
-func tabbedLineHandler(line string, emit func(string)) {
-	if line == "" {
-		return
-	}
-	tabbedTokens := strings.Split(line, "\t")
-	for _, k := range tokenColumns {
-		emit(tabbedTokens[k])
+func tabbedLineHandler(column ...int) func(string, func(string)) {
+	return func(line string, emit func(string)) {
+		if line == "" {
+			return
+		}
+		tokens := strings.Split(line, "\t")
+		for _, k := range column {
+			emit(tokens[k])
+		}
 	}
 }
 
