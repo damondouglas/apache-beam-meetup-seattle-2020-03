@@ -1,4 +1,4 @@
-package url
+package io
 
 import (
 	"github.com/apache/beam/sdks/go/pkg/beam"
@@ -7,6 +7,7 @@ import (
 
 type gcsBase struct {
 	url string
+	opts map[string]interface{}
 }
 
 type gcsReader struct {
@@ -17,8 +18,19 @@ type gcsWriter struct {
 	gcsBase
 }
 
-func (g *gcsBase) setURL(rawurl string) {
+func (g *gcsBase) setURL(rawurl string) (err error) {
 	g.url = rawurl
+	return
+}
+
+func (g *gcsBase) setOptions(opts ...Option) (err error) {
+	if g.opts == nil {
+		g.opts = map[string]interface{}{}
+	}
+	for _, k := range opts {
+		g.opts[k.key()] = k.value()
+	}
+	return
 }
 
 func (g *gcsReader) Read(s beam.Scope) (result beam.PCollection) {

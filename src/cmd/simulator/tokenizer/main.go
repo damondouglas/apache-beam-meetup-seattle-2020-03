@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"temp/pkg/simulator"
-	"temp/pkg/url"
+	"temp/pkg/io"
 )
 
 const (
@@ -54,11 +54,11 @@ func main() {
 	}
 	beam.Init()
 	p, s := beam.NewPipelineWithRoot()
-	reader, err := url.NewReader(fmt.Sprintf("%s/%s", input, source))
+	reader, err := io.NewReader(fmt.Sprintf("%s/%s", input, source))
 	if err != nil {
 		log.Fatal(err)
 	}
-	writer, err := url.NewWriter(fmt.Sprintf("%s/%s", output, target))
+	writer, err := io.NewWriter(fmt.Sprintf("%s/%s", output, target))
 	if err != nil {
 		log.Fatal(err)
 	}

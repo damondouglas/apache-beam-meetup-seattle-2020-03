@@ -3,6 +3,7 @@ module temp
 go 1.13
 
 require (
+	cloud.google.com/go v0.38.0
 	github.com/apache/beam v2.19.0+incompatible
 	github.com/gocarina/gocsv v0.0.0-20200212142550-0b7418e775b8 // indirect
 	github.com/golang/protobuf v1.3.3 // indirect

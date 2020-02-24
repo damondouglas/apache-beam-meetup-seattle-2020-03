@@ -1,4 +1,4 @@
-package url
+package io
 
 import (
 	"fmt"
@@ -17,15 +17,17 @@ const (
 var (
 	readRegistry = map[string]Reader {
 		gcs: &gcsReader{},
+		bigQuery: &bqReader{},
 	}
 	writeRegistry = map[string]Writer {
 		gcs: &gcsWriter{},
+		bigQuery: &bqWriter{},
 	}
 )
 
 func parseScheme(rawurl string) (result string, err error) {
-	schemeMatcher := regexp.MustCompile("^.*:\\/\\/")
-	specialCharMatcher := regexp.MustCompile(":\\/\\/$")
+	schemeMatcher := regexp.MustCompile("^.*://")
+	specialCharMatcher := regexp.MustCompile("://$")
 	find := schemeMatcher.FindString(rawurl)
 	if find == "" {
 		err = fmt.Errorf("scheme missing in %s", rawurl)
@@ -36,7 +38,7 @@ func parseScheme(rawurl string) (result string, err error) {
 	return
 }
 
-func resolveReader(rawurl string) (result Reader, err error) {
+func resolveReader(rawurl string, opts ...Option) (result Reader, err error) {
 	scheme, err := parseScheme(rawurl)
 	if err != nil {
 		return
@@ -46,11 +48,15 @@ func resolveReader(rawurl string) (result Reader, err error) {
 		err = fmt.Errorf("%s does not map to a registered reader", rawurl)
 		return
 	}
-	result.setURL(rawurl)
+	err = result.setOptions(opts...)
+	if err != nil {
+		return
+	}
+	err = result.setURL(rawurl)
 	return
 }
 
-func resolveWriter(rawurl string) (result Writer, err error) {
+func resolveWriter(rawurl string, opts ...Option) (result Writer, err error) {
 	scheme, err := parseScheme(rawurl)
 	if err != nil {
 		return
@@ -60,6 +66,10 @@ func resolveWriter(rawurl string) (result Writer, err error) {
 		err = fmt.Errorf("%s does not map to a registered writer", rawurl)
 		return
 	}
-	result.setURL(rawurl)
+	err = result.setOptions(opts...)
+	if err != nil {
+		return
+	}
+	err = result.setURL(rawurl)
 	return
 }
