@@ -24,5 +24,10 @@ tokenizer: connect ## Deploy artifacts
 	skaffold -p tokenizer delete; \
 	skaffold -p tokenizer run --default-repo=${default-repo}
 
+load-patients: ## Load simulated patient data
+	bq show --schema beam.patients > schema.json; \
+	bq load --field_delimiter="|" --skip_leading_rows=1 beam.patients gs://${project}-input/patients.csv ./schema.json; \
+	rm schema.json
+
 connect: ## Connect to kubernetes cluster
 	gcloud container clusters get-credentials ${cluster} --zone ${zone} --project ${project}
