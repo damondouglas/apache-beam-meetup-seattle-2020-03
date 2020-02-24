@@ -20,3 +20,8 @@ resource "google_storage_bucket_iam_member" "container" {
   member = "serviceAccount:${google_service_account.beam.email}"
   role = "roles/storage.objectViewer"
 }
+
+resource "google_project_iam_member" "bigquery" {
+  member = "serviceAccount:${google_service_account.beam.email}"
+  role = "roles/bigquery.dataEditor"
+}
