@@ -24,6 +24,16 @@ tokenizer: connect ## Deploy artifacts
 	skaffold -p tokenizer delete; \
 	skaffold -p tokenizer run --default-repo=${default-repo}
 
+pipeline: connect ## Deploy artifacts
+	kubectl delete configmap pipeline-config; \
+	kubectl create configmap pipeline-config \
+		--from-literal=INPUT="bigquery://${project}:beam.patients" \
+		--from-literal=OUTPUT="bigquery://${project}:beam.coded_patients_sample" \
+		--from-literal=RXNORM="bigquery://${project}:beam.rxnorm_codes_sample" \
+		--from-literal=PROJECT="${project}"; \
+	skaffold -p pipeline delete; \
+	skaffold -p pipeline run --default-repo=${default-repo}
+
 load-patients: ## Load simulated patient data
 	bq show --schema beam.patients > schema.json; \
 	bq load --field_delimiter="|" --skip_leading_rows=1 beam.patients gs://${project}-input/patients.csv ./schema.json; \
