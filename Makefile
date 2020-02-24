@@ -10,17 +10,17 @@ help:
 build: ## Build containers
 	skaffold build --default-repo=${default-repo}
 
-config: connect ## Deploy environment configuration to cluster
-	kubectl delete configmap job-config; \
-	kubectl create configmap job-config \
-		--from-literal=INPUT="gs://${project}-input" \
-		--from-literal=OUTPUT="gs://${project}-output"
-
 stage-tokenizer: ## Stage files for simulator
 	curl https://zenodo.org/record/3238718/files/redmed_lexicon.tsv?download=1 | \
 	gsutil cp - gs://${project}-input/redmed_lexicon.tsv
 
 tokenizer: connect ## Deploy artifacts
+	kubectl delete configmap tokenizer-config; \
+	kubectl create configmap tokenizer-config \
+		--from-literal=INPUT="gs://${project}-input/redmed_lexicon.tsv" \
+		--from-literal=OUTPUT="bigquery://${project}:beam.drugs" \
+		--from-literal=PROJECT="${project}" \
+		--from-literal=COLUMNS="1,3,4,5"; \
 	skaffold -p tokenizer delete; \
 	skaffold -p tokenizer run --default-repo=${default-repo}
 
