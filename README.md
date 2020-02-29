@@ -1,5 +1,5 @@
 # About
-This is the repository for the 2020-03-02 Apache Beam Meetup.
+This is the repository for the 2020-03-02 Apache Beam Meetup.  The slides for the presentation may be found here: http://bit.ly/apache-beam-meetup-seattle-2020-03
 
 # What problem does this solve?
 
