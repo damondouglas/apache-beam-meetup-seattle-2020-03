@@ -125,7 +125,6 @@ func (bq *bqReader) q() (result string, err error) {
 
 func (bq *bqReader) Read(s beam.Scope) (result beam.PCollection) {
 	result = bigqueryio.Query(s, bq.project(), bq.query, bq.t())
-	//result = bigqueryio.Read(s, bq.project(), bq.qualifiedTableName.String(), bq.t())
 	return
 }
 
