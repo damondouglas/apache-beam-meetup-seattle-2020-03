@@ -25,3 +25,8 @@ resource "google_project_iam_member" "bigquery" {
   member = "serviceAccount:${google_service_account.beam.email}"
   role = "roles/bigquery.dataEditor"
 }
+
+resource "google_project_iam_member" "bigquery_jobs" {
+  member = "serviceAccount:${google_service_account.beam.email}"
+  role = "roles/bigquery.jobUser"
+}

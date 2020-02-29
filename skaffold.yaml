@@ -7,12 +7,19 @@ build:
     envTemplate:
       template: "{{.IMAGE_NAME}}:{{.TAG}}"
   artifacts:
-#    - image: tokenizer
-#      docker:
-#        dockerfile: package/tokenizer
+    - image: base
+      docker:
+        dockerfile: package/base
+    - image: tokenizer
+      docker:
+        dockerfile: package/tokenizer
+        buildArgs:
+          base: "gcr.io/apache-beam-meetup/base:{{.TAG}}" # TODO: remove hard coded project name
     - image: pipeline
       docker:
         dockerfile: package/pipeline
+        buildArgs:
+          base: "gcr.io/apache-beam-meetup/base:{{.TAG}}" # TODO: remove hard coded project name
 deploy:
   kubectl: {}
 profiles:

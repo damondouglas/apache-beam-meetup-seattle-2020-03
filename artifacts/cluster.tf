@@ -1,7 +1,3 @@
-resource "google_project_service" "kubernetes" {
-  service = "container.googleapis.com"
-  disable_on_destroy = false
-}
 
 resource "google_container_cluster" "default" {
   name = "beam"

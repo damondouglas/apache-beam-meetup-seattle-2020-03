@@ -1,4 +1,5 @@
-FROM golang:1.13 as builder
+ARG base
+FROM $base as builder
 
 WORKDIR /app
 

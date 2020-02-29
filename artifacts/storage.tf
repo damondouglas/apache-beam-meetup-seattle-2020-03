@@ -5,3 +5,4 @@ resource "google_storage_bucket" "input" {
 resource "google_storage_bucket" "output" {
   name = "${var.project}-output"
 }
+
