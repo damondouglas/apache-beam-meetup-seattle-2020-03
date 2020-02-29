@@ -11,17 +11,17 @@ import (
 )
 
 const (
-	inputKey = "INPUT"
-	outputKey = "OUTPUT"
+	inputKey   = "INPUT"
+	outputKey  = "OUTPUT"
 	projectKey = "PROJECT"
-	rxnormKey = "RXNORM"
+	snomedKey  = "SNOMED"
 )
 
 var (
-	input = os.Getenv(inputKey)
-	output = os.Getenv(outputKey)
+	input   = os.Getenv(inputKey)
+	output  = os.Getenv(outputKey)
 	project = os.Getenv(projectKey)
-	rxnorm = os.Getenv(rxnormKey)
+	snomed  = os.Getenv(snomedKey)
 )
 
 func init() {
@@ -29,51 +29,95 @@ func init() {
 		inputKey,
 		outputKey,
 		projectKey,
-		rxnormKey,
+		snomedKey,
 	} {
 		if os.Getenv(k) == "" {
 			log.Fatalf("%s empty but expected from environment variables", k)
 		}
 	}
 }
-func main() {
-	p, s := beam.NewPipelineWithRoot()
-	var patients, drugs beam.PCollection
-	//patients, err := readPatients(s)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//drugs, err := readDrugs(s)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//result := beam.ParDo(s, codeFn, patients, beam.SideInput{Input: drugs})
-	//beam.ParDo(s, resultFn, result)
 
-	err := beamx.Run(context.Background(), p)
+type patient struct {
+	MRN          string
+	RawAllergies string `bigquery:"allergies"`
+}
+
+type Term string
+
+type splitPatientAllergy struct {
+	Term Term
+	MRN string
+}
+
+type drug struct {
+	Term      Term
+	ConceptID int
+}
+
+type coded struct {
+	MRN       string
+	ConceptID int
+	Match     float64
+}
+
+func main() {
+	var err error
+	p, s := beam.NewPipelineWithRoot()
+	patients := beam.Create(s,
+		patient{
+			MRN:          "M12345",
+			RawAllergies: "qwert,asdf,zxcv",
+		},
+		patient{
+			MRN:          "M54321",
+			RawAllergies: "yuio,fdsa,qree",
+		},
+	)
+	drugs := beam.Create(
+		s,
+		drug{
+			Term:      "qwert",
+			ConceptID: 1,
+		},
+		drug{
+			Term:      "asdf",
+			ConceptID: 2,
+		},
+		drug{
+			Term:      "ydydu",
+			ConceptID: 3,
+		},
+		drug{
+			Term:      "gree",
+			ConceptID: 3,
+		},
+	)
+
+	splitAllergies := beam.ParDo(s, splitFn, patients)
+
+	keyedDrugs := beam.ParDo(s, keyDrugFn, drugs)
+
+	joined := beam.CoGroupByKey(s, splitAllergies, keyedDrugs)
+
+	beam.ParDo(s, func(t Term, allergies func(*string) bool, drugs func(*int) bool, emit func(Term, string)) {
+		log.Println(t)
+	}, joined)
+
+	err = beamx.Run(context.Background(), p)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func handler(primary string, side string, emit func(string)) {
-
+func keyDrugFn(d drug) (Term, int) {
+	return d.Term, d.ConceptID
 }
 
-type patient struct {
-	MRN string
-	Allergies string
-}
-
-type drug struct {
-	Name string
-	Rxcui string
-}
-
-type coded struct {
-	MRN string
-	Rxcui string
-	Match float64
+func splitFn(p patient, emit func(Term, string)) {
+	allergies := strings.Split(p.RawAllergies, ",")
+	for _, k := range allergies {
+		emit(Term(k), p.MRN)
+	}
 }
 
 func readPatients(s beam.Scope) (result beam.PCollection, err error) {
@@ -86,32 +130,10 @@ func readPatients(s beam.Scope) (result beam.PCollection, err error) {
 }
 
 func readDrugs(s beam.Scope) (result beam.PCollection, err error) {
-	r, err := io.NewReader(rxnorm, io.WithProject(project), io.WithType(drug{}))
+	r, err := io.NewReader(snomed, io.WithProject(project), io.WithType(drug{}))
 	if err != nil {
 		return
 	}
 	result = r.Read(s)
 	return
-}
-
-func codeFn(p patient, d drug, emit func(coded)) {
-	allergies := strings.Split(p.Allergies, ",")
-	for _, k := range allergies {
-		k = strings.TrimSpace(k)
-		k = strings.ToLower(k)
-		m := d.Name
-		m = strings.TrimSpace(m)
-		m = strings.ToLower(m)
-		if k == m {
-			emit(coded{
-				MRN: p.MRN,
-				Rxcui: d.Rxcui,
-				Match: 1.0,
-			})
-		}
-	}
-}
-
-func resultFn(c coded, emit func(coded)) {
-	log.Println(c)
 }
