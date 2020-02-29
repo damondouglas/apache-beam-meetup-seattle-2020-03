@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/apache/beam/sdks/go/pkg/beam"
 	"github.com/apache/beam/sdks/go/pkg/beam/x/beamx"
+	"github.com/apache/beam/sdks/go/pkg/beam/x/debug"
 	"log"
 	"os"
 	"strings"
@@ -68,10 +69,10 @@ func main() {
 			MRN:          "M12345",
 			RawAllergies: "qwert,asdf,zxcv",
 		},
-		patient{
-			MRN:          "M54321",
-			RawAllergies: "yuio,fdsa,qree",
-		},
+		//patient{
+		//	MRN:          "M54321",
+		//	RawAllergies: "yuio,fdsa,qree",
+		//},
 	)
 	drugs := beam.Create(
 		s,
@@ -94,13 +95,17 @@ func main() {
 	)
 
 	splitAllergies := beam.ParDo(s, splitFn, patients)
-
+	debug.Print(s, splitAllergies)
 	keyedDrugs := beam.ParDo(s, keyDrugFn, drugs)
 
 	joined := beam.CoGroupByKey(s, splitAllergies, keyedDrugs)
 
 	beam.ParDo(s, func(t Term, allergies func(*string) bool, drugs func(*int) bool, emit func(Term, string)) {
-		log.Println(t)
+		var mrn string
+		var conceptID int
+		allergies(&mrn)
+		drugs(&conceptID)
+		log.Println(t, mrn, conceptID)
 	}, joined)
 
 	err = beamx.Run(context.Background(), p)
