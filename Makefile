@@ -27,10 +27,10 @@ tokenizer: connect ## Deploy artifacts
 pipeline: connect ## Deploy artifacts
 	kubectl delete configmap pipeline-config; \
 	kubectl create configmap pipeline-config \
-		--from-literal=PATIENTS="bigquery://${project}:patients.uncoded_allergies_sample" \
-		--from-literal=OUTPUT="bigquery://${project}:patients.coded_patients_sample" \
+		--from-literal=PATIENTS="bigquery://${project}:patients.uncoded_allergies" \
+		--from-literal=OUTPUT="bigquery://${project}:patients.coded_patients" \
 		--from-literal=PROJECT="${project}" \
-		--from-literal=SNOMED="bigquery://${project}:rxnorm.snomed_sample"; \
+		--from-literal=SNOMED="bigquery://${project}:rxnorm.snomed"; \
 	skaffold -p pipeline delete; \
 	skaffold -p pipeline run --default-repo=${default-repo}
 
