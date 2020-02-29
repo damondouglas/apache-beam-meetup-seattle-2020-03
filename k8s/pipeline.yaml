@@ -1,16 +1,16 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: tokenizer
+  name: pipeline
 spec:
   template:
     spec:
       restartPolicy: OnFailure
       containers:
-        - name: tokenizer
-          image: tokenizer
+        - name: pipeline
+          image: pipeline
           command:
-            - ./tokenizer
+            - ./pipeline
           envFrom:
             - configMapRef:
-                name: tokenizer-config
+                name: pipeline-config

@@ -7,9 +7,12 @@ build:
     envTemplate:
       template: "{{.IMAGE_NAME}}:{{.TAG}}"
   artifacts:
-    - image: tokenizer
+#    - image: tokenizer
+#      docker:
+#        dockerfile: package/tokenizer
+    - image: pipeline
       docker:
-        dockerfile: package/tokenizer
+        dockerfile: package/pipeline
 deploy:
   kubectl: {}
 profiles:
@@ -20,3 +23,10 @@ profiles:
         value:
           manifests:
             - k8s/tokenizer.yaml
+  - name: pipeline
+    patches:
+      - op: add
+        path: /deploy/kubectl
+        value:
+          manifests:
+            - k8s/pipeline.yaml
